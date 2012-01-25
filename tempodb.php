@@ -24,7 +24,8 @@ class TempoDB
 
     function range($start, $end, $series_id=NULL, $series_name=NULL)
     {
-    	$series_type = NULL;
+    	// must provide either $series_id or $series_name
+        $series_type = NULL;
     	$series_val = NULL;
 
     	if ($series_id) {
@@ -39,11 +40,13 @@ class TempoDB
     		// TODO: throw error
     	}
 
+        // send GET request, formatting dates in ISO 8601
     	return $this->http_req->jsonGetReq($this->getAPIServer()."/series/".$series_type."/".$series_val."/data/?start=".$start->format("c")."&end=".$end->format("c"));
     }
 
     function add($data, $series_id=NULL, $series_name=NULL)
     {
+        // must provide either $series_id or $series_name
     	$series_type = NULL;
     	$series_val = NULL;
 
@@ -59,6 +62,7 @@ class TempoDB
     		// TODO: throw error
     	}
 
+        // send POST request, formatting dates in ISO 8601
     	return $this->http_req->jsonPostReq($this->getAPIServer()."/series/".$series_type."/".$series_val."/data/", $data);
     }
 
@@ -89,6 +93,7 @@ class HTTPReq
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE); 
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
 
+        // if body supplied, likely doing a POST
 		if ($body)
 		{
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
