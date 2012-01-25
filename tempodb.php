@@ -87,13 +87,11 @@ class HTTPReq
 		curl_setopt($ch, CURLOPT_USERPWD, $this->api_key . ":" . $this->api_secret);
 		curl_setopt($ch, CURLOPT_HEADER, 0);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE); 
-		//curl_setopt($ch, CURLOPT_FOLLOWLOCATION,1);
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
 
 		if ($body)
 		{
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-
 			$headers = array(
 				'Content-Length: ' . strlen($body),
 				'Content-Type: application/json',
