@@ -41,7 +41,10 @@ class TempoDB
     	}
 
         // send GET request, formatting dates in ISO 8601
-    	return $this->http_req->jsonGetReq($this->getAPIServer()."/series/".$series_type."/".$series_val."/data/?start=".$start->format("c")."&end=".$end->format("c"));
+        $params = array("start"=>$start->format("c"), "end"=>$end->format("c"));
+        $querystring = http_build_query($params, null, '&')."\n";
+
+        return $this->http_req->jsonGetReq($this->getAPIServer()."/series/".$series_type."/".$series_val."/data/?".$querystring);
     }
 
     function add($data, $series_id=NULL, $series_name=NULL)
@@ -114,7 +117,7 @@ class HTTPReq
 
 	function jsonReq($method, $path, $data=NULL)
 	{
-		$json = json_encode($data);
+        $json = json_encode($data);
 		$ret = self::req($method, $path, $json);
 		$ret[0] = json_decode($ret[0], TRUE);
 		return $ret;

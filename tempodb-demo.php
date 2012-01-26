@@ -1,17 +1,18 @@
 <?php
 require('./tempodb.php');
-date_default_timezone_set("UTC");
+date_default_timezone_set("America/Chicago");
 
 $tdb = new TempoDB("api-key", "api-secret");
-$series_name = 1;
+$series_name = "my_series_name";
 
-/*
+
 // read
+
 $start = new DateTime("2012-01-01");
-$end = new DateTime("2012-01-03");
+$end = new DateTime("2012-01-02");
 $result = $tdb->range($start, $end, NULL, $series_name);
 var_dump($result);
-*/
+
 
 
 // write
@@ -26,8 +27,8 @@ var_dump($result);
     )
     $result = $tdb->add($data, NULL, $series_name);
  */
-
-$date = new DateTime("2014-02-09");
+/*
+$date = new DateTime("2012-01-01");
 
 // insert random data for testing
 // write in ten days worth of data, starting on midnight of $date
@@ -47,5 +48,6 @@ for ($day = 0; $day < 10; $day++)
 	$result = $tdb->add($data, NULL, $series_name);
 	var_dump($result);
 }
+*/
 
 ?>
