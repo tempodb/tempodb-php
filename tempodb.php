@@ -19,12 +19,12 @@ class TempoDB
 
     function getAPIServer()
     {
-    	return "http://".$this->api_server."/".$this->api_version;
+    	return "https://".$this->api_server."/".$this->api_version;
     }
 
-    function range($start, $end, $series_id=NULL, $series_name=NULL)
+    function range($start, $end, $series_id=NULL, $series_key=NULL)
     {
-    	// must provide either $series_id or $series_name
+    	// must provide either $series_id or $series_key
         $series_type = NULL;
     	$series_val = NULL;
 
@@ -32,9 +32,9 @@ class TempoDB
     		$series_type = "id";
     		$series_val = $series_id;
     	}
-    	elseif ($series_name) {
-    		$series_type = "name";
-    		$series_val = $series_name;
+    	elseif ($series_key) {
+    		$series_type = "key";
+    		$series_val = $series_key;
     	}
     	else {
     		// TODO: throw error
@@ -42,14 +42,14 @@ class TempoDB
 
         // send GET request, formatting dates in ISO 8601
         $params = array("start"=>$start->format("c"), "end"=>$end->format("c"));
-        $querystring = http_build_query($params, null, '&')."\n";
+        $querystring = http_build_query($params, null, '&');
 
         return $this->http_req->jsonGetReq($this->getAPIServer()."/series/".$series_type."/".$series_val."/data/?".$querystring);
     }
 
-    function add($data, $series_id=NULL, $series_name=NULL)
+    function add($data, $series_id=NULL, $series_key=NULL)
     {
-        // must provide either $series_id or $series_name
+        // must provide either $series_id or $series_key
     	$series_type = NULL;
     	$series_val = NULL;
 
@@ -57,9 +57,9 @@ class TempoDB
     		$series_type = "id";
     		$series_val = $series_id;
     	}
-    	elseif ($series_name) {
-    		$series_type = "name";
-    		$series_val = $series_name;
+    	elseif ($series_key) {
+    		$series_type = "key";
+    		$series_val = $series_key;
     	}
     	else {
     		// TODO: throw error
@@ -91,6 +91,9 @@ class HTTPReq
 	{
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $path);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+        curl_setopt($ch, CURLOPT_CAINFO, dirname(__FILE__) . '/cacert.pem');
 		curl_setopt($ch, CURLOPT_USERPWD, $this->api_key . ":" . $this->api_secret);
 		curl_setopt($ch, CURLOPT_HEADER, 0);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE); 
