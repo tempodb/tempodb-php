@@ -22,51 +22,57 @@ class TempoDB
     	return "https://".$this->api_server."/".$this->api_version;
     }
 
-    function range($start, $end, $series_id=NULL, $series_key=NULL)
+    function read_id($series_id, $start, $end, $interval=NULL, $function=NULL){
+        $series_type = "id";
+        $series_val = $series_id;
+        return $this->read($series_type, $series_val, $start, $end, $interval, $function);
+    }
+
+    function read_key($series_key, $start, $end, $interval=NULL, $function=NULL){
+        $series_type = "key";
+        $series_val = $series_key;
+        return $this->read($series_type, $series_val, $start, $end, $interval, $function);
+    }
+
+    function read($series_type, $series_val, $start, $end, $interval=NULL, $function=NULL)
     {
-    	// must provide either $series_id or $series_key
-        $series_type = NULL;
-    	$series_val = NULL;
-
-    	if ($series_id) {
-    		$series_type = "id";
-    		$series_val = $series_id;
-    	}
-    	elseif ($series_key) {
-    		$series_type = "key";
-    		$series_val = $series_key;
-    	}
-    	else {
-    		// TODO: throw error
-    	}
-
         // send GET request, formatting dates in ISO 8601
-        $params = array("start"=>$start->format("c"), "end"=>$end->format("c"));
+        $params = array(
+                "start"=>$start->format("c"), 
+                "end"=>$end->format("c"),
+                "interval"=>$interval,
+                "function"=>$function);
+
         $querystring = http_build_query($params, null, '&');
 
         return $this->http_req->jsonGetReq($this->getAPIServer()."/series/".$series_type."/".$series_val."/data/?".$querystring);
     }
 
-    function add($data, $series_id=NULL, $series_key=NULL)
+
+    function write_id($series_id, $data)
     {
-        // must provide either $series_id or $series_key
-    	$series_type = NULL;
-    	$series_val = NULL;
+        $series_type = "id";
+        $series_val = $series_id;
+        return $this->write($series_type, $series_val, $data);
+    }
 
-    	if ($series_id) {
-    		$series_type = "id";
-    		$series_val = $series_id;
-    	}
-    	elseif ($series_key) {
-    		$series_type = "key";
-    		$series_val = $series_key;
-    	}
-    	else {
-    		// TODO: throw error
-    	}
+    function write_key($series_key, $data)
+    {
+        $series_type = "key";
+        $series_val = $series_key;
+        return $this->write($series_type, $series_val, $data);
+    }
 
+    function write($series_type, $series_val, $data)
+    {
         // send POST request, formatting dates in ISO 8601
     	return $this->http_req->jsonPostReq($this->getAPIServer()."/series/".$series_type."/".$series_val."/data/", $data);
+    }
+
+    function write_bulk($data)
+    {
+        // send POST request, formatting dates in ISO 8601
+        return $this->http_req->jsonPostReq($this->getAPIServer()."/data/", $data);
     }
 
 }
