@@ -1,4 +1,6 @@
 <?php
+/* http://tempo-db.com/api/read-series/#read-series-by-key */
+
 require('./tempodb.php');
 date_default_timezone_set("America/Chicago");
 
@@ -7,8 +9,6 @@ $tdb = new TempoDB("your-api-key", "your-api-secret");
 $series_key = "custom-series-key";
 $start = new DateTime("2011-01-03");
 $end = new DateTime("2011-01-06");
-
-/* http://tempo-db.com/api/read-series/#read-series-by-key */
 
 
 /* read query with no rollup interval or function specified */

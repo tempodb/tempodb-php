@@ -1,12 +1,12 @@
 <?php
+/* http://tempo-db.com/api/write-series/#write-series-by-key */
+
 require('./tempodb.php');
 date_default_timezone_set("America/Chicago");
 
 $tdb = new TempoDB("your-api-key", "your-api-secret");
 
 $series_key = "custom-series-key";
-
-/* http://tempo-db.com/api/write-series/#write-series-by-key */
 
 
 $date = new DateTime("2012-01-01");
