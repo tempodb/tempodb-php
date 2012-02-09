@@ -4,7 +4,7 @@
 require('./tempodb.php');
 date_default_timezone_set("America/Chicago");
 
-$tdb = new TempoDB("myagley", "opensesame");
+$tdb = new TempoDB("your-api-key", "your-api-secret");
 
 $data = array(
     't' => date("c"),
