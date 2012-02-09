@@ -7,8 +7,6 @@ date_default_timezone_set("America/Chicago");
 $tdb = new TempoDB("your-api-key", "your-api-secret");
 
 $series_key = "custom-series-key";
-
-
 $date = new DateTime("2012-01-01");
 
 // insert random data for testing
