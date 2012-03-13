@@ -39,10 +39,10 @@ class DataPoint {
         $this->value = $value;
     }
 
-    function to_json() {
+    static function to_json($obj) {
         $json = array(
-            "t" => $this->ts->format("c"),
-            "v" => $this->value
+            "t" => $obj->ts->format("c"),
+            "v" => $obj->value
         );
         return $json;
     }
@@ -65,12 +65,12 @@ class DataSet {
         $this->summary = $summary;
     }
 
-    function to_json() {
+    static function to_json($obj) {
         $json = array(
-            "series" => $this->series->to_json(),
-            "start" => $this->start->format("c"),
-            "end" => $this->end->format("c"),
-            "data" => array_map(array($this, $this->to_json()), $json[0]),
+            "series" => $obj->series->to_json(),
+            "start" => $obj->start->format("c"),
+            "end" => $obj->end->format("c"),
+            "data" => array_map("DataPoint::to_json", $obj->data),
             "summary" => isset($summary) ? $summary->to_json : array()
         );
         return $json;
@@ -150,6 +150,14 @@ class TempoDB {
         return $this->_read($series_type, $series_val, $start, $end, $interval, $function);
     }
 
+    function write_id($series_id, $data) {
+        return $this->_write("id", $series_id, $data);
+    }
+
+    function write_key($series_key, $data) {
+        return $this->_write("key", $series_key, $data);
+    }
+
     private function _read($series_type, $series_val, $start, $end, $interval=NULL, $function=NULL) {
         // send GET request, formatting dates in ISO 8601
         $params = array(
@@ -161,6 +169,13 @@ class TempoDB {
         $url = "/series/" . $series_type . "/" . $series_val . "/data/";
         $json = $this->request($url, "GET", $params);
         return DataSet::from_json($json[0]);
+    }
+
+    private function _write($series_type, $series_val, $data) {
+        $url = "/series/" . $series_type . "/" . $series_val . "/data/";
+        $body = array_map("DataPoint::to_json", $data);
+        $json = $this->request($url, "POST", $body);
+        return $json;
     }
 
     private function request($target, $method="GET", $params=array()) {
@@ -178,7 +193,8 @@ class TempoDB {
 
         if ($method == "POST") {
             $path = $this->build_full_url($target);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+            $body = json_encode($params);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
             $headers = array(
                 'Content-Length: ' . strlen($body),
                 'Content-Type: application/json',
@@ -188,7 +204,8 @@ class TempoDB {
         }
         else if ($method == "PUT") {
             $path = $this->build_full_url($target);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+            $body = json_encode($params);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
             $headers = array(
                 'Content-Length: ' . strlen($body),
                 'Content-Type: application/json',
