@@ -259,6 +259,9 @@ class TempoDB {
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
+        if (($http_code / 100) != 2)
+            throw new TempoDBClientException($response);
+
         return array(json_decode($response, true), $http_code);
     }
 
@@ -300,5 +303,7 @@ class TempoDB {
         return implode("&", $p);
     }
 }
+
+class TempoDBClientException extends Exception { }
 
 ?>
