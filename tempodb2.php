@@ -10,13 +10,13 @@ class Series {
         $this->attributes = $attributes;
     }
 
-    function to_json() {
+    static function to_json($obj) {
         $json = array(
-            "id" => $this->id,
-            "key" => $this->key,
-            "name" => $this->name,
-            "tags" => $this->tags,
-            "attributes" => $this->attributes
+            "id" => $obj->id,
+            "key" => $obj->key,
+            "name" => $obj->name,
+            "tags" => $obj->tags,
+            "attributes" => $obj->attributes
         );
         return $json;
     }
@@ -67,11 +67,11 @@ class DataSet {
 
     static function to_json($obj) {
         $json = array(
-            "series" => $obj->series->to_json(),
+            "series" => Series::to_json($obj->series),
             "start" => $obj->start->format("c"),
             "end" => $obj->end->format("c"),
             "data" => array_map("DataPoint::to_json", $obj->data),
-            "summary" => isset($summary) ? $summary->to_json : array()
+            "summary" => isset($obj->$summary) ? Summary::to_json($obj->$summary) : array()
         );
         return $json;
     }
