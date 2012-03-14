@@ -133,9 +133,46 @@ class TempoDB {
         $this->secure = $secure;
     }
 
-    function get_series() {
-        $json = $this->request("/series/");
-        return array_map("Series::from_json", $json[0]);
+    function get_series($options=array()) {
+        $params = array();
+        if (isset($options["ids"]))
+            $params["id"] = $options["ids"];
+        if (isset($options["keys"]))
+            $params["key"] = $options["keys"];
+        if (isset($options["tags"]))
+            $params["tag"] = $options["tags"];
+        if (isset($options["attributes"]))
+            $params["attr"] = $options["attributes"];
+
+        $json = $this->request("/series/", "GET", $params);
+        $data = is_array($json[0]) ? $json[0] : array();
+        return array_map("Series::from_json", $data);
+    }
+
+    function read($start, $end, $options=array()) {
+        $params = array(
+            "start" => $start->format("c"),
+            "end" => $end->format("c")
+        );
+
+        if (isset($options["interval"]))
+            $params["interval"] = $options["interval"];
+        if (isset($options["function"]))
+            $params["function"] = $options["function"];
+
+        if (isset($options["ids"]))
+            $params["id"] = $options["ids"];
+        if (isset($options["keys"]))
+            $params["key"] = $options["keys"];
+        if (isset($options["tags"]))
+            $params["tag"] = $options["tags"];
+        if (isset($options["attributes"]))
+            $params["attr"] = $options["attributes"];
+
+        $url = "/data/";
+        $json = $this->request($url, "GET", $params);
+        $data = is_array($json[0]) ? $json[0] : array();
+        return array_map("DataSet::from_json", $data);
     }
 
     function read_id($series_id, $start, $end, $interval=NULL, $function=NULL) {
@@ -244,7 +281,23 @@ class TempoDB {
     }
 
     private function urlencode($params) {
-        return http_build_query($params, null, '&');
+        $p = array();
+        foreach ($params as $key => $value) {
+            if (is_array($value)) {
+                foreach ($value as $k => $v) {
+                    if (is_numeric($k)) {
+                        array_push($p, rawurlencode($key) . "=" . rawurlencode($v));
+                    }
+                    else {
+                        array_push($p, rawurlencode($key."[".$k."]")."=".rawurlencode($v));
+                    }
+                }
+            }
+            else {
+                array_push($p, rawurlencode($key)."=".rawurlencode($value));
+            }
+        }
+        return implode("&", $p);
     }
 }
 
