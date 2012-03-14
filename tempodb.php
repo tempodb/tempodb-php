@@ -10,13 +10,13 @@ class Series {
         $this->attributes = $attributes;
     }
 
-    function to_json() {
+    static function to_json($obj) {
         $json = array(
-            "id" => $this->id,
-            "key" => $this->key,
-            "name" => $this->name,
-            "tags" => $this->tags,
-            "attributes" => $this->attributes
+            "id" => $obj->id,
+            "key" => $obj->key,
+            "name" => $obj->name,
+            "tags" => $obj->tags,
+            "attributes" => $obj->attributes
         );
         return $json;
     }
@@ -32,14 +32,98 @@ class Series {
 }
 
 
+class DataPoint {
+
+    function __construct($ts, $value) {
+        $this->ts = $ts;
+        $this->value = $value;
+    }
+
+    static function to_json($obj) {
+        $json = array(
+            "t" => $obj->ts->format("c"),
+            "v" => $obj->value
+        );
+        return $json;
+    }
+
+    static function from_json($json) {
+        $ts = isset($json["t"]) ? new DateTime($json["t"]) : NULL;
+        $value = isset($json["v"]) ? $json["v"] : NULL;
+        return new DataPoint($ts, $value);
+    }
+}
+
+
+class DataSet {
+
+    function __construct($series, $start, $end, $data=array(), $summary=NULL) {
+        $this->series = $series;
+        $this->start = $start;
+        $this->end = $end;
+        $this->data = $data;
+        $this->summary = $summary;
+    }
+
+    static function to_json($obj) {
+        $json = array(
+            "series" => Series::to_json($obj->series),
+            "start" => $obj->start->format("c"),
+            "end" => $obj->end->format("c"),
+            "data" => array_map("DataPoint::to_json", $obj->data),
+            "summary" => isset($obj->$summary) ? Summary::to_json($obj->$summary) : array()
+        );
+        return $json;
+    }
+
+    static function from_json($json) {
+        $series = isset($json["series"]) ? Series::from_json($json["series"]) : NULL;
+        $start = isset($json["start"]) ? new DateTime($json["start"]) : NULL;
+        $end = isset($json["end"]) ? new DateTime($json["end"]) : NULL;
+        $data = isset($json["data"]) ? array_map("DataPoint::from_json", $json["data"]) : array();
+        $summary = isset($json["summary"]) ? Summary::from_json($json["summary"]) : NULL;
+        return new DataSet($series, $start, $end, $data, $summary);
+    }
+}
+
+
+class Summary {
+    private $data = array();
+
+    public function __get($member) {
+        if (isset($this->data[$member])) {
+            return $this->data[$member];
+        }
+        return null;
+    }
+
+    public function __isset($member) {
+        return isset($this->data[$member]);
+    }
+
+    public function __set($member, $value) {
+        $this->data[$member] = $value;
+    }
+
+    function to_json() {
+        return $data;
+    }
+
+    static function from_json($json) {
+        $summary = new Summary();
+        $data = isset($json) ? $json : array();
+
+        foreach ($data as $key => $value) {
+            $summary->__set($key, $value);
+        }
+        return $summary;
+    }
+}
+
 class TempoDB {
     const API_HOST = "api.tempo-db.com";
     const API_PORT = 443;
     const API_VERSION = "v1";
-
-    protected $api_key;
-    protected $api_secret;
-    protected $http_req;
 
     function __construct($key, $secret, $host=self::API_HOST, $port=self::API_PORT, $secure=true) {
         $this->key = $key;
@@ -47,32 +131,81 @@ class TempoDB {
         $this->host = $host;
         $this->port = $port;
         $this->secure = $secure;
-
-        $this->http_req = new HTTPReq($key, $secret, $host, self::API_VERSION);
     }
 
-    function getAPIServer() {
-        return "https://".$this->host."/".self::API_VERSION;
+    function get_series($options=array()) {
+        $params = array();
+        if (isset($options["ids"]))
+            $params["id"] = $options["ids"];
+        if (isset($options["keys"]))
+            $params["key"] = $options["keys"];
+        if (isset($options["tags"]))
+            $params["tag"] = $options["tags"];
+        if (isset($options["attributes"]))
+            $params["attr"] = $options["attributes"];
+
+        $json = $this->request("/series/", "GET", $params);
+        $data = is_array($json[0]) ? $json[0] : array();
+        return array_map("Series::from_json", $data);
     }
 
-    function get_series() {
-        $json = $this->request("/series/");
-        return array_map("Series::from_json", $json[0]);
+    function read($start, $end, $options=array()) {
+        $params = array(
+            "start" => $start->format("c"),
+            "end" => $end->format("c")
+        );
+
+        if (isset($options["interval"]))
+            $params["interval"] = $options["interval"];
+        if (isset($options["function"]))
+            $params["function"] = $options["function"];
+
+        if (isset($options["ids"]))
+            $params["id"] = $options["ids"];
+        if (isset($options["keys"]))
+            $params["key"] = $options["keys"];
+        if (isset($options["tags"]))
+            $params["tag"] = $options["tags"];
+        if (isset($options["attributes"]))
+            $params["attr"] = $options["attributes"];
+
+        $url = "/data/";
+        $json = $this->request($url, "GET", $params);
+        $data = is_array($json[0]) ? $json[0] : array();
+        return array_map("DataSet::from_json", $data);
     }
 
     function read_id($series_id, $start, $end, $interval=NULL, $function=NULL) {
         $series_type = "id";
         $series_val = $series_id;
-        return $this->read($series_type, $series_val, $start, $end, $interval, $function);
+        return $this->_read($series_type, $series_val, $start, $end, $interval, $function);
     }
 
     function read_key($series_key, $start, $end, $interval=NULL, $function=NULL) {
         $series_type = "key";
         $series_val = $series_key;
-        return $this->read($series_type, $series_val, $start, $end, $interval, $function);
+        return $this->_read($series_type, $series_val, $start, $end, $interval, $function);
     }
 
-    function read($series_type, $series_val, $start, $end, $interval=NULL, $function=NULL) {
+    function write_id($series_id, $data) {
+        return $this->_write("id", $series_id, $data);
+    }
+
+    function write_key($series_key, $data) {
+        return $this->_write("key", $series_key, $data);
+    }
+
+    function write_bulk($ts, $data) {
+        // send POST request, formatting dates in ISO 8601
+        $params = array(
+            "t" => $ts->format("c"),
+            "data" => $data
+        );
+        $json = $this->request("/data/", "POST", $params);
+        return $json;
+    }
+
+    private function _read($series_type, $series_val, $start, $end, $interval=NULL, $function=NULL) {
         // send GET request, formatting dates in ISO 8601
         $params = array(
             "start" => $start->format("c"),
@@ -80,34 +213,19 @@ class TempoDB {
             "interval" => $interval,
             "function" => $function);
 
-        $querystring = http_build_query($params, null, '&');
-
-        return $this->http_req->jsonGetReq($this->getAPIServer()."/series/".$series_type."/".$series_val."/data/?".$querystring);
+        $url = "/series/" . $series_type . "/" . $series_val . "/data/";
+        $json = $this->request($url, "GET", $params);
+        return DataSet::from_json($json[0]);
     }
 
-    function write_id($series_id, $data) {
-        $series_type = "id";
-        $series_val = $series_id;
-        return $this->write($series_type, $series_val, $data);
+    private function _write($series_type, $series_val, $data) {
+        $url = "/series/" . $series_type . "/" . $series_val . "/data/";
+        $body = array_map("DataPoint::to_json", $data);
+        $json = $this->request($url, "POST", $body);
+        return $json;
     }
 
-    function write_key($series_key, $data) {
-        $series_type = "key";
-        $series_val = $series_key;
-        return $this->write($series_type, $series_val, $data);
-    }
-
-    function write($series_type, $series_val, $data) {
-        // send POST request, formatting dates in ISO 8601
-        return $this->http_req->jsonPostReq($this->getAPIServer()."/series/".$series_type."/".$series_val."/data/", $data);
-    }
-
-    function write_bulk($data) {
-        // send POST request, formatting dates in ISO 8601
-        return $this->http_req->jsonPostReq($this->getAPIServer()."/data/", $data);
-    }
-
-    function request($target, $method="GET", $params=array()) {
+    private function request($target, $method="GET", $params=array()) {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_USERPWD, $this->key . ":" . $this->secret);
         curl_setopt($ch, CURLOPT_HEADER, 0);
@@ -122,7 +240,8 @@ class TempoDB {
 
         if ($method == "POST") {
             $path = $this->build_full_url($target);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+            $body = json_encode($params);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
             $headers = array(
                 'Content-Length: ' . strlen($body),
                 'Content-Type: application/json',
@@ -132,7 +251,8 @@ class TempoDB {
         }
         else if ($method == "PUT") {
             $path = $this->build_full_url($target);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+            $body = json_encode($params);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
             $headers = array(
                 'Content-Length: ' . strlen($body),
                 'Content-Type: application/json',
@@ -149,17 +269,20 @@ class TempoDB {
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
+        if (($http_code / 100) != 2)
+            throw new TempoDBClientException($response);
+
         return array(json_decode($response, true), $http_code);
     }
 
-    function build_full_url($target, $params=array()) {
+    private function build_full_url($target, $params=array()) {
         $port = $this->port == 80 ? "" : ":" . $this->port;
         $protocol = $this->secure ? "https://" : "http://";
         $base_full_url = $protocol . $this->host . $port;
         return $base_full_url . $this->build_url($target, $params);
     }
 
-    function build_url($url, $params=array()) {
+    private function build_url($url, $params=array()) {
         $target_path = $url;
 
         if (empty($params)) {
@@ -170,67 +293,27 @@ class TempoDB {
         }
     }
 
-    function urlencode($params) {
-        return http_build_query($params, null, '&');
-    }
-}
-
-class HTTPReq {
-    const GET = 'GET';
-    const POST = 'POST';
-
-    protected $api_key;
-    protected $api_secret;
-
-    function __construct($api_key, $api_secret, $api_server, $api_version) {
-        $this->api_key = $api_key;
-        $this->api_secret = $api_secret;
-        $this->api_server = $api_server;
-        $this->api_version = $api_version;
-    }
-
-    function req($method, $path, $body=NULL) {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $path);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-        curl_setopt($ch, CURLOPT_CAINFO, dirname(__FILE__) . '/cacert.pem');
-        curl_setopt($ch, CURLOPT_USERPWD, $this->api_key . ":" . $this->api_secret);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-
-        // if body supplied, likely doing a POST
-        if ($body) {
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-            $headers = array(
-                'Content-Length: ' . strlen($body),
-                'Content-Type: application/json',
-            );
-
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    private function urlencode($params) {
+        $p = array();
+        foreach ($params as $key => $value) {
+            if (is_array($value)) {
+                foreach ($value as $k => $v) {
+                    if (is_numeric($k)) {
+                        array_push($p, rawurlencode($key) . "=" . rawurlencode($v));
+                    }
+                    else {
+                        array_push($p, rawurlencode($key."[".$k."]")."=".rawurlencode($v));
+                    }
+                }
+            }
+            else {
+                array_push($p, rawurlencode($key)."=".rawurlencode($value));
+            }
         }
-
-        $response = curl_exec($ch);
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-        curl_close($ch);
-        return array($response, $http_code);
-    }
-
-    function jsonReq($method, $path, $data=NULL) {
-        $json = json_encode($data);
-        $ret = self::req($method, $path, $json);
-        $ret[0] = json_decode($ret[0], TRUE);
-        return $ret;
-    }
-
-    function jsonGetReq($path) {
-        return self::jsonReq(self::GET, $path);
-    }
-
-    function jsonPostReq($path, $data) {
-        return self::jsonReq(self::POST, $path, $data);
+        return implode("&", $p);
     }
 }
+
+class TempoDBClientException extends Exception { }
+
 ?>
