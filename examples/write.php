@@ -1,7 +1,7 @@
 <?php
 /* http://tempo-db.com/api/write-series/#write-series-by-key */
 
-require('./tempodb.php');
+require('../tempodb.php');
 date_default_timezone_set("America/Chicago");
 
 $tdb = new TempoDB("your-api-key", "your-api-secret");
@@ -17,7 +17,7 @@ for ($day = 0; $day < 10; $day++)
 
     // build up array of timestamp/value pairs for one day
     for ($min=0; $min < 1440; $min++)
-    { 
+    {
         $data[] = array('t' => $date->format("c"), 'v' => rand()/17);
         // increment by 1 min
         $date->modify("+1 minute");

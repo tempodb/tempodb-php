@@ -133,6 +133,13 @@ class TempoDB {
         $this->secure = $secure;
     }
 
+    function create_series($key="") {
+        $params["key"] = $key;
+
+        $json = $this->request("/series/", "POST", $params);
+        return Series::from_json($json[0]);
+    }
+
     function get_series($options=array()) {
         $params = array();
         if (isset($options["ids"]))

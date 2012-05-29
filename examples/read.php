@@ -1,7 +1,7 @@
 <?php
 /* http://tempo-db.com/api/read-series/#read-series-by-key */
 
-require('./tempodb.php');
+require('../tempodb.php');
 date_default_timezone_set("America/Chicago");
 
 $tdb = new TempoDB("your-api-key", "your-api-secret");
