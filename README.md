@@ -48,7 +48,7 @@ and a statistics summary table. The Summary table contains statistics for the ti
 
 # Client API
 
-## create_series(*key=nil*)
+## create_series(*key=""*)
 
 Creates and returns a series object, optionally with the given key.
 
@@ -66,8 +66,8 @@ The following example creates two series, one with a given key of "my-custom-key
 
     $tdb = new TempoDB("your-api-key", "your-api-secret");
 
-    series1 = $tdb->create_series("my-custom-key");
-    series2 = $tdb->create_series();
+    $series1 = $tdb->create_series("my-custom-key");
+    $series2 = $tdb->create_series();
 
 ## get_series(*options=array()*)
 Gets a list of series objects, optionally filtered by the provided parameters. Series can be filtered by id, key, tag and
