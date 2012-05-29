@@ -16,7 +16,7 @@ class Series {
             "key" => $obj->key,
             "name" => $obj->name,
             "tags" => $obj->tags,
-            "attributes" => $obj->attributes
+            "attributes" => $obj->attributes ? $obj->attributes : (object) null
         );
         return $json;
     }
@@ -71,7 +71,7 @@ class DataSet {
             "start" => $obj->start->format("c"),
             "end" => $obj->end->format("c"),
             "data" => array_map("DataPoint::to_json", $obj->data),
-            "summary" => isset($obj->$summary) ? Summary::to_json($obj->$summary) : array()
+            "summary" => isset($obj->$summary) ? Summary::to_json($obj->$summary) : (object) null
         );
         return $json;
     }
@@ -81,7 +81,7 @@ class DataSet {
         $start = isset($json["start"]) ? new DateTime($json["start"]) : NULL;
         $end = isset($json["end"]) ? new DateTime($json["end"]) : NULL;
         $data = isset($json["data"]) ? array_map("DataPoint::from_json", $json["data"]) : array();
-        $summary = isset($json["summary"]) ? Summary::from_json($json["summary"]) : NULL;
+        $summary = isset($json["summary"]) ? Summary::from_json($json["summary"]) : array();
         return new DataSet($series, $start, $end, $data, $summary);
     }
 }
@@ -147,6 +147,12 @@ class TempoDB {
         $json = $this->request("/series/", "GET", $params);
         $data = is_array($json[0]) ? $json[0] : array();
         return array_map("Series::from_json", $data);
+    }
+
+    function update_series($series) {
+        $url = "/series/id/" . $series->id . "/";
+        $json = $this->request($url, "PUT", Series::to_json($series));
+        return Series::from_json($json[0]);
     }
 
     function read($start, $end, $options=array()) {
@@ -252,6 +258,7 @@ class TempoDB {
         else if ($method == "PUT") {
             $path = $this->build_full_url($target);
             $body = json_encode($params);
+            var_dump($body);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
             $headers = array(
                 'Content-Length: ' . strlen($body),

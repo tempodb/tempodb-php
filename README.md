@@ -76,6 +76,32 @@ The following example returns all series with tags "tag1" and "tag2" and attribu
 
     $series_list = $tdb->get_series(array("tags" => $tags, "attributes" => attributes));
 
+## update_series(series)
+Updates a series. The series id is taken from the passed-in series object. Currently, only tags and attributes can be
+modified. The easiest way to use this method is through a read-modify-write cycle.
+### Parameters
+* series - the new series (Series)
+
+### Returns
+The updated Series
+
+### Example
+
+The following example reads the list of series with key *test1* (should only be one) and replaces the tags with *tag3*.
+
+    require('./tempodb.php');
+
+    $tdb = new TempoDB("your-api-key", "your-api-secret");
+
+    $keys = array("test1");
+    $series_list = $tdb->get_series(array("keys" => $keys));
+
+    if ($series_list) {
+        $series = $series_list[0];
+        $series->tags = array("tag3");
+        $tdb->update_series($series);
+    }
+
 ## read(start, stop, *options=array()*)
 
 Gets an array of DataSets for the specified start/stop times.
