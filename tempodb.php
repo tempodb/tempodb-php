@@ -1,5 +1,10 @@
 <?php
 
+/**
+ *  TempoDB Client
+ *  Copyright (c) 2012 TempoDB Inc. All rights reserved.
+ *
+ */
 class Series {
 
     function __construct($id, $key, $name="", $tags=array(), $attributes=array()) {
