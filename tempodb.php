@@ -129,6 +129,7 @@ class TempoDB {
     const API_HOST = "api.tempo-db.com";
     const API_PORT = 443;
     const API_VERSION = "v1";
+    const VERSION = "0.2.0";
 
     function __construct($key, $secret, $host=self::API_HOST, $port=self::API_PORT, $secure=true) {
         $this->key = $key;
@@ -278,36 +279,30 @@ class TempoDB {
         if ($this->secure) {
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-            curl_setopt($ch, CURLOPT_CAINFO, dirname(__FILE__) . '/cacert.pem');
+            curl_setopt($ch, CURLOPT_CAINFO, dirname(__FILE__) . "/cacert.pem");
         }
+
+        $headers = array("User-Agent: " . "tempodb-php/" . self::VERSION);
 
         if ($method == "POST") {
             $path = $this->build_full_url($target);
             $body = json_encode($params);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-            $headers = array(
-                'Content-Length: ' . strlen($body),
-                'Content-Type: application/json',
-            );
+            array_push($headers, "Content-Length: " . strlen($body), "Content-Type: application/json");
 
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
         }
         else if ($method == "PUT") {
             $path = $this->build_full_url($target);
             $body = json_encode($params);
-            var_dump($body);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-            $headers = array(
-                'Content-Length: ' . strlen($body),
-                'Content-Type: application/json',
-            );
+            array_push($headers, "Content-Length: " . strlen($body), "Content-Type: application/json");
 
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
         }
         else {
             $path = $this->build_full_url($target, $params);
         }
 
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_URL, $path);
         $response = curl_exec($ch);
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
