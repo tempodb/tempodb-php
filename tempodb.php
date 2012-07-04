@@ -279,6 +279,7 @@ class TempoDB {
         if ($this->secure) {
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+            curl_setopt($ch, CURLOPT_SSLVERSION, 3);
             curl_setopt($ch, CURLOPT_CAINFO, dirname(__FILE__) . "/cacert.pem");
         }
 
