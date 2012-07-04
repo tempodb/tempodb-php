@@ -333,3 +333,93 @@ The following example writes datapoints to four separate series at the same time
 
     $tdb->write_bulk($ts, $data);
 
+## increment_id(series_id, data)
+Increments the value of the specified series at the given timestamp. The value of the datapoint is the amount to increment. This is similar to a write. However the value is incremented by the datapoint value
+instead of overwritten. Values are incremented atomically, so this is useful for counting events. The series id and an array of DataPoints are required.
+
+### Parameters
+* series_id - id for the series to increment (string)
+* data - the data to write (array of DataPoints)
+
+### Returns
+Nothing
+
+### Example
+
+The following example increments three datapoints of the series with id "38268c3b231f1266a392931e15e99231".
+
+    require('./tempodb.php');
+
+    $tdb = new TempoDB("your-api-key", "your-api-secret");
+
+    $data = array(
+        new DataPoint(new DateTime("2012-01-01T01:00:00"), 1),
+        new DataPoint(new DateTime("2012-01-01T01:01:00"), 2),
+        new DataPoint(new DateTime("2012-01-01T01:02:00"), 1)
+    );
+
+    $tdb->increment_id("38268c3b231f1266a392931e15e99231", $data);
+
+## increment_key(series_key, data)
+Increments the value of the specified series at the given timestamp. The value of the datapoint is the amount to increment. This is similar to a write. However the value is incremented by the datapoint value
+instead of overwritten. Values are incremented atomically, so this is useful for counting events. The series key and an array of DataPoints are required. Note: a series will be created
+if the provided key does not exist.
+
+### Parameters
+* series_key - key for the series to increment (string)
+* data - the data to write (array of DataPoints)
+
+### Returns
+Nothing
+
+### Example
+
+The following example increments three datapoints to the series with key "my-custom-key".
+
+    require('./tempodb.php');
+
+    $tdb = new TempoDB("your-api-key", "your-api-secret");
+
+    $data = array(
+        new DataPoint(new DateTime("2012-01-01T01:00:00"), 1),
+        new DataPoint(new DateTime("2012-01-01T01:01:00"), 2),
+        new DataPoint(new DateTime("2012-01-01T01:02:00"), 4)
+    );
+
+    $tdb->increment_key("my-custom-key", $data);
+
+## increment_bulk(ts, data)
+Increments values of multiple series for a particular timestamp. This function takes a timestamp and a parameter called data, which is an
+array of arrays containing the series id or key and the value. For example:
+
+    $data = array(
+        array("id" => "01868c1a2aaf416ea6cd8edd65e7a4b8", "v" => 4),
+        array("id" => "38268c3b231f1266a392931e15e99231", "v" => 2),
+        array("key" => "your-custom-key", "v" => 1),
+        array("key" => "foo", "v" => 1)
+    );
+
+### Parameters
+* ts - a timestamp of the data points (DateTime)
+* data - an array of dictionaries containing an id or key and the value
+
+### Returns
+Nothing
+
+### Example
+
+The following example increments datapoints to four separate series at the same timestamp.
+
+    require('./tempodb.php');
+
+    $tdb = new TempoDB("your-api-key", "your-api-secret");
+
+    $ts = new DateTime("2012-01-08T01:21:00");
+    $data = array(
+        array("id" => "01868c1a2aaf416ea6cd8edd65e7a4b8", "v" => 4),
+        array("id" => "38268c3b231f1266a392931e15e99231", "v" => 2),
+        array("key" => "your-custom-key", "v" => 1),
+        array("key" => "foo", "v" => 1)
+    );
+
+    $tdb->increment_bulk($ts, $data);
