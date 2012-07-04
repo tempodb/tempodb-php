@@ -223,6 +223,24 @@ class TempoDB {
         return $json;
     }
 
+    function increment_id($series_id, $data) {
+        return $this->_increment("id", $series_id, $data);
+    }
+
+    function increment_key($series_key, $data) {
+        return $this->_increment("key", $series_key, $data);
+    }
+
+    function increment_bulk($ts, $data) {
+        // send POST request, formatting dates in ISO 8601
+        $params = array(
+            "t" => $ts->format("c"),
+            "data" => $data
+        );
+        $json = $this->request("/increment/", "POST", $params);
+        return $json;
+    }
+
     private function _read($series_type, $series_val, $start, $end, $interval=NULL, $function=NULL) {
         // send GET request, formatting dates in ISO 8601
         $params = array(
@@ -238,6 +256,13 @@ class TempoDB {
 
     private function _write($series_type, $series_val, $data) {
         $url = "/series/" . $series_type . "/" . $series_val . "/data/";
+        $body = array_map("DataPoint::to_json", $data);
+        $json = $this->request($url, "POST", $body);
+        return $json;
+    }
+
+    private function _increment($series_type, $series_val, $data) {
+        $url = "/series/" . $series_type . "/" . $series_val . "/increment/";
         $body = array_map("DataPoint::to_json", $data);
         $json = $this->request($url, "POST", $body);
         return $json;
