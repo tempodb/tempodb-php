@@ -129,7 +129,7 @@ class TempoDB {
     const API_HOST = "api.tempo-db.com";
     const API_PORT = 443;
     const API_VERSION = "v1";
-    const VERSION = "0.2.0";
+    const VERSION = "0.3.0";
 
     function __construct($key, $secret, $host=self::API_HOST, $port=self::API_PORT, $secure=true) {
         $this->key = $key;
