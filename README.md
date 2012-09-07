@@ -136,6 +136,7 @@ Gets an array of DataSets for the specified start/stop times.
 * keys - an array of keys to include (array of strings)
 * tags - an array of tags to filter on. These tags are and'd together (array of strings)
 * attributes - an array of key/value pairs to filter on. These attributes are and'd together. (array of key/value pairs)
+* tz - the time zone of the output data points (string)
 
 The interval parameter allows you to specify a rollup period. For example, "1hour" will roll the data up on the hour using the provided function. The function parameter specifies the folding function
 to use while rolling the data up. A rollup is selected automatically if no interval or function is given. The auto rollup interval
@@ -194,6 +195,7 @@ read (above).
 * stop - end time for the query (DateTime)
 * interval - the rollup interval (string)
 * function - the rollup folding function (string)
+* tz - the time zone of the output data points (string)
 
 ### Returns
 
@@ -224,6 +226,7 @@ read (above).
 * stop - end time for the query (DateTime)
 * interval - the rollup interval (string)
 * function - the rollup folding function (string)
+* tz - the time zone of the output data points (string)
 
 ### Returns
 
