@@ -187,6 +187,8 @@ class TempoDB {
             $params["tag"] = $options["tags"];
         if (isset($options["attributes"]))
             $params["attr"] = $options["attributes"];
+        if (isset($options["tz"]))
+            $params["tz"] = $options["tz"];
 
         $url = "/data/";
         $json = $this->request($url, "GET", $params);
@@ -194,16 +196,16 @@ class TempoDB {
         return array_map("DataSet::from_json", $data);
     }
 
-    function read_id($series_id, $start, $end, $interval=NULL, $function=NULL) {
+    function read_id($series_id, $start, $end, $interval=NULL, $function=NULL, $tz="") {
         $series_type = "id";
         $series_val = $series_id;
-        return $this->_read($series_type, $series_val, $start, $end, $interval, $function);
+        return $this->_read($series_type, $series_val, $start, $end, $interval, $function, $tz);
     }
 
-    function read_key($series_key, $start, $end, $interval=NULL, $function=NULL) {
+    function read_key($series_key, $start, $end, $interval=NULL, $function=NULL, $tz="") {
         $series_type = "key";
         $series_val = $series_key;
-        return $this->_read($series_type, $series_val, $start, $end, $interval, $function);
+        return $this->_read($series_type, $series_val, $start, $end, $interval, $function, $tz);
     }
 
     function write_id($series_id, $data) {
@@ -242,13 +244,15 @@ class TempoDB {
         return $json;
     }
 
-    private function _read($series_type, $series_val, $start, $end, $interval=NULL, $function=NULL) {
+    private function _read($series_type, $series_val, $start, $end, $interval=NULL, $function=NULL, $tz="") {
         // send GET request, formatting dates in ISO 8601
         $params = array(
             "start" => $start->format("c"),
             "end" => $end->format("c"),
             "interval" => $interval,
-            "function" => $function);
+            "function" => $function,
+            "tz" => $tz
+        );
 
         $url = "/series/" . $series_type . "/" . $series_val . "/data/";
         $json = $this->request($url, "GET", $params);
