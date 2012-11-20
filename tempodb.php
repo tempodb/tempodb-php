@@ -303,6 +303,7 @@ class TempoDB {
     private function request($target, $method="GET", $params=array()) {
         curl_setopt($this->curl, CURLOPT_USERPWD, $this->key . ":" . $this->secret);
         curl_setopt($this->curl, CURLOPT_HEADER, 0);
+        curl_setopt($this->curl, CURLOPT_ENCODING, "gzip");
         curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, TRUE);
         curl_setopt($this->curl, CURLOPT_CUSTOMREQUEST, $method);
 
