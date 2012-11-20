@@ -208,16 +208,16 @@ class TempoDB {
         return $this->_read($series_type, $series_val, $start, $end, $interval, $function, $tz);
     }
 
-    function delete_id($series_id, $start, $end) {
+    function delete_id($series_id, $start, $end, $options=array()) {
         $series_type = "id";
         $series_val = $series_id;
-        return $this->_delete($series_type, $series_val, $start, $end);
+        return $this->_delete($series_type, $series_val, $start, $end, $options);
     }
 
-    function delete_key($series_key, $start, $end) {
+    function delete_key($series_key, $start, $end, $options=array()) {
         $series_type = "key";
         $series_val = $series_key;
-        return $this->_delete($series_type, $series_val, $start, $end);
+        return $this->_delete($series_type, $series_val, $start, $end, $options);
     }
 
     function write_id($series_id, $data) {
@@ -271,11 +271,11 @@ class TempoDB {
         return DataSet::from_json($json[0]);
     }
 
-    private function _delete($series_type, $series_val, $start, $end) {
-        $params = array(
+    private function _delete($series_type, $series_val, $start, $end, $options) {
+        $params = array_merge($options, array(
             "start" => $start->format("c"),
             "end" => $end->format("c")
-        );
+        ));
         $url = "/series/" . $series_type . "/" . $series_val . "/data/";
         $response = $this->request($url, "DELETE", $params);
         return $response;
