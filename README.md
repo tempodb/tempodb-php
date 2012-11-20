@@ -213,7 +213,7 @@ returns a minimum datapoint per day.
     $start = new DateTime("2012-01-01");
     $end = new DateTime("2012-01-02");
 
-    $data = $tdb->read_id("38268c3b231f1266a392931e15e99231", $start, $end, array(interval" => "1day", "function" => "min"));
+    $data = $tdb->read_id("38268c3b231f1266a392931e15e99231", $start, $end, array("interval" => "1day", "function" => "min"));
 
 ## read_key(series_key, start, stop, *options=array()*)
 
@@ -244,7 +244,7 @@ returns a minimum datapoint per day.
     $start = new DateTime("2012-01-01");
     $end = new DateTime("2012-01-02");
 
-    $data = $tdb->read_key("my-custom-key", $start, $end, array(interval" => "1day", "function" => "min"));
+    $data = $tdb->read_key("my-custom-key", $start, $end, array("interval" => "1day", "function" => "min"));
 
 ## write_id(series_id, data)
 
@@ -426,3 +426,59 @@ The following example increments datapoints to four separate series at the same 
     );
 
     $tdb->increment_bulk($ts, $data);
+
+## delete_id(series_id, start, stop, *options=array()*)
+
+Deletes a range of data from a series referenced by id. The id, start, and stop times are required. As with the read api, the start date is
+inclusive and the end date is exclusive. i.e. \[start, end)
+
+### Parameters
+* series_id - id for the series to delete from (string)
+* start - start time for the query (DateTime)
+* stop - end time for the query (DateTime)
+* options - additional options (array, optional)
+
+### Returns
+
+Nothing
+
+### Example
+
+The following example deletes data for the series with id "38268c3b231f1266a392931e15e99231" from 2012-01-01 to 2012-02-01.
+
+    require('./tempodb.php');
+
+    $tdb = new TempoDB("your-api-key", "your-api-secret");
+
+    $start = new DateTime("2012-01-01");
+    $end = new DateTime("2012-01-02");
+
+    $data = $tdb->delete_id("38268c3b231f1266a392931e15e99231", $start, $end);
+
+## delete_key(series_key, start, stop, *options=array()*)
+
+Deletes a range of data from a series referenced by key. The key, start, and stop times are required. As with the read api, the start date is inclusive and
+the end date is exclusive. i.e. \[start, end)
+
+### Parameters
+* series_key - key for the series to delete from (string)
+* start - start time for the query (DateTime)
+* stop - end time for the query (DateTime)
+* options - additional options (array, optional)
+
+### Returns
+
+Nothing
+
+### Example
+
+The following example deletes data for the series with key "my-custom-key" from 2012-01-01 to 2012-02-01.
+
+    require('./tempodb.php');
+
+    $tdb = new TempoDB("your-api-key", "your-api-secret");
+
+    $start = new DateTime("2012-01-01");
+    $end = new DateTime("2012-01-02");
+
+    $data = $tdb->delete_key("my-custom-key", $start, $end);
