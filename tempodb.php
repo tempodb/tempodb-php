@@ -208,6 +208,18 @@ class TempoDB {
         return $this->_read($series_type, $series_val, $start, $end, $interval, $function, $tz);
     }
 
+    function delete_id($series_id, $start, $end, $options=array()) {
+        $series_type = "id";
+        $series_val = $series_id;
+        return $this->_delete($series_type, $series_val, $start, $end, $options);
+    }
+
+    function delete_key($series_key, $start, $end, $options=array()) {
+        $series_type = "key";
+        $series_val = $series_key;
+        return $this->_delete($series_type, $series_val, $start, $end, $options);
+    }
+
     function write_id($series_id, $data) {
         return $this->_write("id", $series_id, $data);
     }
@@ -259,6 +271,16 @@ class TempoDB {
         return DataSet::from_json($json[0]);
     }
 
+    private function _delete($series_type, $series_val, $start, $end, $options) {
+        $params = array_merge($options, array(
+            "start" => $start->format("c"),
+            "end" => $end->format("c")
+        ));
+        $url = "/series/" . $series_type . "/" . $series_val . "/data/";
+        $response = $this->request($url, "DELETE", $params);
+        return $response;
+    }
+
     private function _write($series_type, $series_val, $data) {
         $url = "/series/" . $series_type . "/" . $series_val . "/data/";
         $body = array_map("DataPoint::to_json", $data);
@@ -302,6 +324,9 @@ class TempoDB {
             array_push($headers, "Content-Length: " . strlen($body), "Content-Type: application/json");
 
             curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+        }
+        else if ($method == "DELETE") {
+            $path = $this->build_full_url($target, $params);
         }
         else {
             $path = $this->build_full_url($target, $params);
