@@ -9,4 +9,5 @@ function loader($class)
 }
 
 require_once('src/tempodb.php');
+require_once('src/http/HttpRequest.php');
 spl_autoload_register('loader');

@@ -1,5 +1,7 @@
 <?php
 
+require("http/CurlRequest.php");
+
 /**
  *  TempoDB Client
  *  Copyright (c) 2012 TempoDB Inc. All rights reserved.
@@ -131,17 +133,20 @@ class TempoDB {
     const API_VERSION = "v1";
     const VERSION = "0.3.0";
 
-    function __construct($key, $secret, $host=self::API_HOST, $port=self::API_PORT, $secure=true) {
+    function __construct($key, $secret, $host=self::API_HOST, $port=self::API_PORT, $secure=true, $curl=null) {
         $this->key = $key;
         $this->secret = $secret;
         $this->host = $host;
         $this->port = $port;
         $this->secure = $secure;
-        $this->curl = curl_init();
+
+        if($curl == null) {
+            $this->curl = new CurlRequest();
+        }
     }
 
     function __destruct() {
-        curl_close($this->curl);
+        $this->curl->close();
     }
 
     function create_series($key="") {
@@ -301,17 +306,17 @@ class TempoDB {
     }
 
     private function request($target, $method="GET", $params=array()) {
-        curl_setopt($this->curl, CURLOPT_USERPWD, $this->key . ":" . $this->secret);
-        curl_setopt($this->curl, CURLOPT_HEADER, 0);
-        curl_setopt($this->curl, CURLOPT_ENCODING, "gzip");
-        curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($this->curl, CURLOPT_CUSTOMREQUEST, $method);
+        $this->curl->setOption(CURLOPT_USERPWD, $this->key . ":" . $this->secret);
+        $this->curl->setOption(CURLOPT_HEADER, 0);
+        $this->curl->setOption(CURLOPT_ENCODING, "gzip");
+        $this->curl->setOption(CURLOPT_RETURNTRANSFER, TRUE);
+        $this->curl->setOption(CURLOPT_CUSTOMREQUEST, $method);
 
         if ($this->secure) {
-            curl_setopt($this->curl, CURLOPT_SSL_VERIFYPEER, true);
-            curl_setopt($this->curl, CURLOPT_SSL_VERIFYHOST, 2);
-            curl_setopt($this->curl, CURLOPT_SSLVERSION, 3);
-            curl_setopt($this->curl, CURLOPT_CAINFO, dirname(__FILE__) . "/cacert.pem");
+            $this->curl->setOption(CURLOPT_SSL_VERIFYPEER, true);
+            $this->curl->setOption(CURLOPT_SSL_VERIFYHOST, 2);
+            $this->curl->setOption(CURLOPT_SSLVERSION, 3);
+            $this->curl->setOption(CURLOPT_CAINFO, dirname(__FILE__) . "/cacert.pem");
         }
 
         $headers = array("User-Agent: " . "tempodb-php/" . self::VERSION);
@@ -321,14 +326,14 @@ class TempoDB {
             $body = json_encode($params);
             array_push($headers, "Content-Length: " . strlen($body), "Content-Type: application/json");
 
-            curl_setopt($this->curl, CURLOPT_POSTFIELDS, $body);
+            $this->curl->setOption(CURLOPT_POSTFIELDS, $body);
         }
         else if ($method == "PUT") {
             $path = $this->build_full_url($target);
             $body = json_encode($params);
             array_push($headers, "Content-Length: " . strlen($body), "Content-Type: application/json");
 
-            curl_setopt($this->curl, CURLOPT_POSTFIELDS, $body);
+            $this->curl->setOption(CURLOPT_POSTFIELDS, $body);
         }
         else if ($method == "DELETE") {
             $path = $this->build_full_url($target, $params);
@@ -337,10 +342,10 @@ class TempoDB {
             $path = $this->build_full_url($target, $params);
         }
 
-        curl_setopt($this->curl, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($this->curl, CURLOPT_URL, $path);
-        $response = curl_exec($this->curl);
-        $http_code = curl_getinfo($this->curl, CURLINFO_HTTP_CODE);
+        $this->curl->setOption(CURLOPT_HTTPHEADER, $headers);
+        $this->curl->setOption(CURLOPT_URL, $path);
+        $response = $this->curl->execute();
+        $http_code = $this->curl->getInfo(CURLINFO_HTTP_CODE);
 
         if (($http_code / 100) != 2)
             throw new TempoDBClientException($response);
