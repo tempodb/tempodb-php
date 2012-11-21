@@ -1,6 +1,8 @@
 # TempoDB PHP API Client
 
-The TempoDB PHP API Client makes calls to the [TempoDB API](http://tempo-db.com/api/).
+[![Build Status](https://travis-ci.org/tempodb/tempodb-php.png)](https://travis-ci.org/tempodb/tempodb-php)
+
+The [TempoDB](http://tempo-db.com) PHP API Client makes calls to the [TempoDB API](http://tempo-db.com/api/).
 
 # Classes
 
