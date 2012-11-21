@@ -6,8 +6,12 @@ class CurlRequest implements HttpRequest
 {
     private $handle = null;
 
-    public function __construct($url) {
-        $this->handle = curl_init($url);
+    public function __construct() {
+        $this->handle = curl_init();
+    }
+
+    public function setUrl($url) {
+        curl_setopt($this->handle, CURLOPT_URL, $path);
     }
 
     public function setOption($name, $value) {

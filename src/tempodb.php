@@ -133,16 +133,13 @@ class TempoDB {
     const API_VERSION = "v1";
     const VERSION = "0.3.0";
 
-    function __construct($key, $secret, $host=self::API_HOST, $port=self::API_PORT, $secure=true, $curl=null) {
+    function __construct($key, $secret, $host=self::API_HOST, $port=self::API_PORT, $secure=true) {
         $this->key = $key;
         $this->secret = $secret;
         $this->host = $host;
         $this->port = $port;
         $this->secure = $secure;
-
-        if($curl == null) {
-            $this->curl = new CurlRequest();
-        }
+        $this->curl = new CurlRequest();
     }
 
     function __destruct() {
@@ -343,7 +340,7 @@ class TempoDB {
         }
 
         $this->curl->setOption(CURLOPT_HTTPHEADER, $headers);
-        $this->curl->setOption(CURLOPT_URL, $path);
+        $this->curl->setUrl($path);
         $response = $this->curl->execute();
         $http_code = $this->curl->getInfo(CURLINFO_HTTP_CODE);
 
