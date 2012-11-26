@@ -71,7 +71,8 @@ class TempoDBTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testReadId() {
-        $body = '{
+        $url = 'https://example.com:443/v1/series/id/id/data/?start=2012-03-27T00%3A00%3A00%2B00%3A00&end=2012-03-28T00%3A00%3A00%2B00%3A00&interval=&function=&tz=';
+        $returns = '{
             "series": {
                 "id": "id",
                 "key": "key",
@@ -88,10 +89,59 @@ class TempoDBTest extends PHPUnit_Framework_TestCase {
         $start = new DateTime("2012-03-27");
         $end = new DateTime("2012-03-28");
 
-        $url = 'https://example.com:443/v1/series/id/id/data/?start=2012-03-27T00%3A00%3A00%2B00%3A00&end=2012-03-28T00%3A00%3A00%2B00%3A00&interval=&function=&tz=';
-        $this->expectRequest($url, 'GET', 200, $body);
+        $this->expectRequest($url, 'GET', 200, $returns);
         $dataset = $this->client->read_id("id", $start, $end);
         $expected = new DataSet(new Series('id', 'key'), $start, $end, array(new DataPoint($start, 12.34)), new Summary());
+        $this->assertEquals($dataset, $expected);
+    }
+
+    public function testReadKey() {
+        $url = 'https://example.com:443/v1/series/key/key/data/?start=2012-03-27T00%3A00%3A00%2B00%3A00&end=2012-03-28T00%3A00%3A00%2B00%3A00&interval=&function=&tz=';
+        $returns = '{
+            "series": {
+                "id": "id",
+                "key": "key",
+                "name": "",
+                "tags": [],
+                "attributes": {}
+            },
+            "start": "2012-03-27T00:00:00.000",
+            "end": "2012-03-28T00:00:00.000",
+            "data": [{"t": "2012-03-27T00:00:00.000", "v": 12.34}],
+            "summary": {}
+        }';
+
+        $start = new DateTime("2012-03-27");
+        $end = new DateTime("2012-03-28");
+
+        $this->expectRequest($url, 'GET', 200, $returns);
+        $dataset = $this->client->read_key("key", $start, $end);
+        $expected = new DataSet(new Series('id', 'key'), $start, $end, array(new DataPoint($start, 12.34)), new Summary());
+        $this->assertEquals($dataset, $expected);
+    }
+
+    public function testRead() {
+        $url = 'https://example.com:443/v1/data/?start=2012-03-27T00%3A00%3A00%2B00%3A00&end=2012-03-28T00%3A00%3A00%2B00%3A00&key=key1';
+        $returns = '[{
+            "series": {
+                "id": "id",
+                "key": "key1",
+                "name": "",
+                "tags": [],
+                "attributes": {}
+            },
+            "start": "2012-03-27T00:00:00.000",
+            "end": "2012-03-28T00:00:00.000",
+            "data": [{"t": "2012-03-27T00:00:00.000", "v": 12.34}],
+            "summary": {}
+        }]';
+
+        $start = new DateTime("2012-03-27");
+        $end = new DateTime("2012-03-28");
+
+        $this->expectRequest($url, 'GET', 200, $returns);
+        $dataset = $this->client->read($start, $end, array('keys' => 'key1'));
+        $expected = array(new DataSet(new Series('id', 'key1'), $start, $end, array(new DataPoint($start, 12.34)), new Summary()));
         $this->assertEquals($dataset, $expected);
     }
 
