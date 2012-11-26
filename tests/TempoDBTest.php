@@ -163,6 +163,21 @@ class TempoDBTest extends PHPUnit_Framework_TestCase {
         $this->client->write_key("key1", array(new DataPoint(new DateTime("2012-03-27"), 12.34)));
     }
 
+    public function testWriteBulk() {
+        $url = 'https://example.com:443/v1/data/';
+        $data = array(
+            array('id' => '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v' => 4.164),
+            array('id' => '38268c3b231f1266a392931e15e99231', 'v' => 73.13),
+            array('key' => 'your-custom-key', 'v' => 55.423),
+            array('key' => 'foo', 'v' => 324.991),
+        );
+        $body = '{"t":"2012-03-27T00:00:00+00:00","data":' . json_encode($data) . '}';
+        $returns = '';
+
+        $this->expectRequestWithBody($url, 'POST', $body, 200, $returns);
+        $this->client->write_bulk(new DateTime("2012-03-27"), $data);
+    }
+
     public function testIncrementId() {
         $url = 'https://example.com:443/v1/series/id/id1/increment/';
         $body = '[{"t":"2012-03-27T00:00:00+00:00","v":1}]';
@@ -181,6 +196,20 @@ class TempoDBTest extends PHPUnit_Framework_TestCase {
         $this->client->increment_key("key1", array(new DataPoint(new DateTime("2012-03-27"), 2)));
     }
 
+    public function testIncrementBulk() {
+        $url = 'https://example.com:443/v1/increment/';
+        $data = array(
+            array('id' => '01868c1a2aaf416ea6cd8edd65e7a4b8', 'v' => 4),
+            array('id' => '38268c3b231f1266a392931e15e99231', 'v' => 2),
+            array('key' => 'your-custom-key', 'v' => 2),
+            array('key' => 'foo', 'v' => 2),
+        );
+        $body = '{"t":"2012-03-27T00:00:00+00:00","data":' . json_encode($data) . '}';
+        $returns = '';
+
+        $this->expectRequestWithBody($url, 'POST', $body, 200, $returns);
+        $this->client->increment_bulk(new DateTime("2012-03-27"), $data);
+    }
 
     private function expectRequest($url, $method, $response_code, $returns) {
         $this->client->curl->expects($this->once())
