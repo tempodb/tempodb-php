@@ -14,6 +14,10 @@ class CurlRequest implements HttpRequest
         curl_setopt($this->handle, CURLOPT_URL, $path);
     }
 
+    public function setMethod($method) {
+        $this->curl->setOption(CURLOPT_CUSTOMREQUEST, $method);
+    }
+
     public function setOption($name, $value) {
         curl_setopt($this->handle, $name, $value);
     }

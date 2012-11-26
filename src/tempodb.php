@@ -307,7 +307,6 @@ class TempoDB {
         $this->curl->setOption(CURLOPT_HEADER, 0);
         $this->curl->setOption(CURLOPT_ENCODING, "gzip");
         $this->curl->setOption(CURLOPT_RETURNTRANSFER, TRUE);
-        $this->curl->setOption(CURLOPT_CUSTOMREQUEST, $method);
 
         if ($this->secure) {
             $this->curl->setOption(CURLOPT_SSL_VERIFYPEER, true);
@@ -341,6 +340,7 @@ class TempoDB {
 
         $this->curl->setOption(CURLOPT_HTTPHEADER, $headers);
         $this->curl->setUrl($path);
+        $this->curl->setMethod($method);
         $response = $this->curl->execute();
         $http_code = $this->curl->getInfo(CURLINFO_HTTP_CODE);
 
