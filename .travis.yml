@@ -8,4 +8,4 @@ php:
   - 5.4
 script: make test
 notifications:
-  irc: "tech@tempo-db.com"
+  email: "tech@tempo-db.com"
