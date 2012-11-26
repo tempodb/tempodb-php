@@ -145,6 +145,43 @@ class TempoDBTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($dataset, $expected);
     }
 
+    public function testWriteId() {
+        $url = 'https://example.com:443/v1/series/id/id1/data/';
+        $body = '[{"t":"2012-03-27T00:00:00+00:00","v":12.34}]';
+        $returns = '';
+
+        $this->expectRequestWithBody($url, 'POST', $body, 200, $returns);
+        $this->client->write_id("id1", array(new DataPoint(new DateTime("2012-03-27"), 12.34)));
+    }
+
+    public function testWriteKey() {
+        $url = 'https://example.com:443/v1/series/key/key1/data/';
+        $body = '[{"t":"2012-03-27T00:00:00+00:00","v":12.34}]';
+        $returns = '';
+
+        $this->expectRequestWithBody($url, 'POST', $body, 200, $returns);
+        $this->client->write_key("key1", array(new DataPoint(new DateTime("2012-03-27"), 12.34)));
+    }
+
+    public function testIncrementId() {
+        $url = 'https://example.com:443/v1/series/id/id1/increment/';
+        $body = '[{"t":"2012-03-27T00:00:00+00:00","v":1}]';
+        $returns = '';
+
+        $this->expectRequestWithBody($url, 'POST', $body, 200, $returns);
+        $this->client->increment_id("id1", array(new DataPoint(new DateTime("2012-03-27"), 1)));
+    }
+
+    public function testIncrementKey() {
+        $url = 'https://example.com:443/v1/series/key/key1/increment/';
+        $body = '[{"t":"2012-03-27T00:00:00+00:00","v":2}]';
+        $returns = '';
+
+        $this->expectRequestWithBody($url, 'POST', $body, 200, $returns);
+        $this->client->increment_key("key1", array(new DataPoint(new DateTime("2012-03-27"), 2)));
+    }
+
+
     private function expectRequest($url, $method, $response_code, $returns) {
         $this->client->curl->expects($this->once())
                            ->method('setUrl')
