@@ -321,15 +321,13 @@ class TempoDB {
             $path = $this->build_full_url($target);
             $body = json_encode($params);
             array_push($headers, "Content-Length: " . strlen($body), "Content-Type: application/json");
-
-            $this->curl->setOption(CURLOPT_POSTFIELDS, $body);
+            $this->curl->setBody($body);
         }
         else if ($method == "PUT") {
             $path = $this->build_full_url($target);
             $body = json_encode($params);
             array_push($headers, "Content-Length: " . strlen($body), "Content-Type: application/json");
-
-            $this->curl->setOption(CURLOPT_POSTFIELDS, $body);
+            $this->curl->setBody($body);
         }
         else if ($method == "DELETE") {
             $path = $this->build_full_url($target, $params);

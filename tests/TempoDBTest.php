@@ -82,6 +82,13 @@ class TempoDBTest extends PHPUnit_Framework_TestCase {
                            ->with(CURLINFO_HTTP_CODE)
                            ->will($this->returnValue($response_code));
     }
+
+    private function expectRequestWithBody($url, $method, $body, $response_code, $returns) {
+        $this->expectRequest($url, $method, $response_code, $returns);
+        $this->client->curl->expects($this->once)
+                           ->method('setBody')
+                           ->with($this->equalTo($body));
+    }
 }
 
 ?>
