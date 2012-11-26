@@ -211,6 +211,29 @@ class TempoDBTest extends PHPUnit_Framework_TestCase {
         $this->client->increment_bulk(new DateTime("2012-03-27"), $data);
     }
 
+    public function testDeleteId() {
+        $url = 'https://example.com:443/v1/series/id/id1/data/?start=2012-03-27T00%3A00%3A00%2B00%3A00&end=2012-03-28T00%3A00%3A00%2B00%3A00';
+        $returns = '';
+
+        $start = new DateTime("2012-03-27");
+        $end = new DateTime("2012-03-28");
+
+        $this->expectRequest($url, 'DELETE', 200, $returns);
+        $dataset = $this->client->delete_id("id1", $start, $end);
+    }
+
+    public function testDeleteKey() {
+        $url = 'https://example.com:443/v1/series/key/key1/data/?start=2012-03-27T00%3A00%3A00%2B00%3A00&end=2012-03-28T00%3A00%3A00%2B00%3A00';
+        $returns = '';
+
+        $start = new DateTime("2012-03-27");
+        $end = new DateTime("2012-03-28");
+
+        $this->expectRequest($url, 'DELETE', 200, $returns);
+        $dataset = $this->client->delete_key("key1", $start, $end);
+    }
+
+
     private function expectRequest($url, $method, $response_code, $returns) {
         $this->client->curl->expects($this->once())
                            ->method('setUrl')
