@@ -42,6 +42,34 @@ class TempoDBTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($series, $expected);
     }
 
+    public function testCreateSeries() {
+        $url = 'https://example.com:443/v1/series/';
+        $body = '{"key":"my-key.tag1.1"}';
+        $returns = '{
+            "id": "id",
+            "key": "my-key.tag1.1",
+            "name": "",
+            "tags": ["my-key", "tag1"],
+            "attributes": {}
+        }';
+
+        $this->expectRequestWithBody($url, 'POST', $body, 200, $returns);
+        $series = $this->client->create_series("my-key.tag1.1");
+        $expected = new Series('id', 'my-key.tag1.1', '', array('my-key', 'tag1'), array());
+        $this->assertEquals($series, $expected);
+    }
+
+    public function testUpdateSeries() {
+        $update = new Series('id', 'key', 'name', array('tag1'), array('key1' => 'value1'));
+        $url = 'https://example.com:443/v1/series/id/id/';
+        $body = json_encode(Series::to_json($update));
+        $returns = json_encode(Series::to_json($update));
+
+        $this->expectRequestWithBody($url, 'PUT', $body, 200, $returns);
+        $series = $this->client->update_series($update);
+        $this->assertEquals($series, $update);
+    }
+
     public function testReadId() {
         $body = '{
             "series": {
@@ -85,7 +113,7 @@ class TempoDBTest extends PHPUnit_Framework_TestCase {
 
     private function expectRequestWithBody($url, $method, $body, $response_code, $returns) {
         $this->expectRequest($url, $method, $response_code, $returns);
-        $this->client->curl->expects($this->once)
+        $this->client->curl->expects($this->once())
                            ->method('setBody')
                            ->with($this->equalTo($body));
     }
