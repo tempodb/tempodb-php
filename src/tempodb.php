@@ -177,6 +177,12 @@ class TempoDB {
         return DeleteSummary::from_json($json[0]);
     }
 
+    function delete_all_series($options) {
+        $params = $this->filter_params($options);
+        $json = $this->request("/series/", "DELETE", array_merge(array("allow_truncation" => "true"), $params));
+        return DeleteSummary::from_json($json[0]);
+    }
+
     function update_series($series) {
         $url = "/series/id/" . $series->id . "/";
         $json = $this->request($url, "PUT", Series::to_json($series));
@@ -403,7 +409,7 @@ class TempoDB {
         if (isset($options["tags"]))
             $params["tag"] = $options["tags"];
         if (isset($options["attributes"]))
-			$params["attr"] = $options["attributes"];
+            $params["attr"] = $options["attributes"];
         return $params;
     }
 }
