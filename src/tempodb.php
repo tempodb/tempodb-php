@@ -165,32 +165,14 @@ class TempoDB {
     }
 
     function get_series($options=array()) {
-        $params = array();
-        if (isset($options["ids"]))
-            $params["id"] = $options["ids"];
-        if (isset($options["keys"]))
-            $params["key"] = $options["keys"];
-        if (isset($options["tags"]))
-            $params["tag"] = $options["tags"];
-        if (isset($options["attributes"]))
-            $params["attr"] = $options["attributes"];
-
+        $params = $this->filter_params($options);
         $json = $this->request("/series/", "GET", $params);
         $data = is_array($json[0]) ? $json[0] : array();
         return array_map("Series::from_json", $data);
     }
 
     function delete_series($options) {
-        $params = array();
-        if (isset($options["ids"]))
-            $params["id"] = $options["ids"];
-        if (isset($options["keys"]))
-            $params["key"] = $options["keys"];
-        if (isset($options["tags"]))
-            $params["tag"] = $options["tags"];
-        if (isset($options["attributes"]))
-			$params["attr"] = $options["attributes"];
-
+        $params = $this->filter_params($options);
         $json = $this->request("/series/", "DELETE", $params);
         return DeleteSummary::from_json($json[0]);
     }
@@ -410,6 +392,19 @@ class TempoDB {
             }
         }
         return implode("&", $p);
+    }
+
+    private function filter_params($options) {
+        $params = array();
+        if (isset($options["ids"]))
+            $params["id"] = $options["ids"];
+        if (isset($options["keys"]))
+            $params["key"] = $options["keys"];
+        if (isset($options["tags"]))
+            $params["tag"] = $options["tags"];
+        if (isset($options["attributes"]))
+			$params["attr"] = $options["attributes"];
+        return $params;
     }
 }
 
