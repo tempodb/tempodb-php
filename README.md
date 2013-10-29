@@ -48,6 +48,11 @@ and a statistics summary table. The Summary table contains statistics for the ti
 * data - datapoints (array of DataPoints)
 * summary - a summary table of statistics for the queried range (Summary)
 
+## DeleteSummary(deleted)
+Represents data associated with a delete operation. This is similar to what you would get back when executing a SQL `UPDATE` or `DELETE` query that returns the number of rows affected.
+### Members
+* deleted - the number of series that were successfully deleted
+
 # Client API
 
 ## create_series(*key=""*)
@@ -98,6 +103,52 @@ The following example returns all series with tags "tag1" and "tag2" and attribu
     );
 
     $series_list = $tdb->get_series(array("tags" => $tags, "attributes" => attributes));
+
+## delete_series(*options={}*)
+Delete series objects by the given filter criteria.
+This method has the same query parameters as `get_series`. Series can be
+deleted by id, key, tag and attribute. You must specify at least one filter
+query param for deletion.
+
+### Parameters
+* ids - an array of ids to include (Array of strings)
+* keys - an array of keys to include (Array of strings)
+* tags - an array of tags to filter on. These tags are and'd together (Array of strings)
+* attributes - a hash of key/value pairs to filter on. These attributes are and'd together. (Hash)
+* allow_truncation - a boolean that must be passed when you wish to delete all your series. Mutually exclusive with the filter query parameters. (Boolean)
+
+### Returns
+A DeleteSummary object
+
+### Example
+
+The following example deletes all series with "tag1" and "tag2" and attribute "attr1" equal to "value1".
+
+    required('./tempodb.php');
+
+    $tdb = new TempoDB("your-api-key", "your-api-secret");
+
+    $tags = array("tag1", "tag2");
+    $attributes = array("attr1" => "value1");
+    $summary = $tdb->delete_series(array("tags" => $tags, "attributes" => $attributes));
+
+## delete_all_series()
+Delete all series in a database.
+
+### Parameters
+* None
+
+### Returns
+A DeleteSummary object
+
+### Example
+
+The following example deletes all series with "tag1" and "tag2" and attribute "attr1" equal to "value1".
+
+    required('./tempodb.php');
+
+    $tdb = new TempoDB("your-api-key", "your-api-secret");
+    $summary = $tdb->delete_all_series();
 
 ## update_series(series)
 Updates a series. The series id is taken from the passed-in series object. Currently, only tags and attributes can be
