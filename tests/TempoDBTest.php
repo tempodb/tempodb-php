@@ -59,6 +59,26 @@ class TempoDBTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($series, $expected);
     }
 
+    public function testDeleteSeries() {
+        $url = 'https://example.com:443/v1/series/?tag=delete_me';
+        $returns = '{"deleted":2}';
+
+        $this->expectRequest($url, 'DELETE', 200, $returns);
+        $summary = $this->client->delete_series(array("tags" => array("delete_me")));
+        $expected = new DeleteSummary(2);
+        $this->assertEquals($summary, $expected);
+    }
+
+    public function testDeleteAllSeries() {
+        $url = 'https://example.com:443/v1/series/?allow_truncation=true&tag=delete_me';
+        $returns = '{"deleted":2}';
+
+        $this->expectRequest($url, 'DELETE', 200, $returns);
+        $summary = $this->client->delete_all_series(array("tags" => array("delete_me")));
+        $expected = new DeleteSummary(2);
+        $this->assertEquals($summary, $expected);
+    }
+
     public function testUpdateSeries() {
         $update = new Series('id', 'key', 'name', array('tag1'), array('key1' => 'value1'));
         $url = 'https://example.com:443/v1/series/id/id/';
