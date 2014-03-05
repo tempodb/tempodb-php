@@ -6,7 +6,7 @@ date_default_timezone_set("America/Chicago");
 
 $tdb = new TempoDB("your-api-key", "your-api-secret");
 
-$ts = date("c");
+$ts = new DateTime();
 $data = array(
     array('key' => "custom-series-key1", 'v' => 1.11),
     array('key' => "custom-series-key2", 'v' => 2.22),
