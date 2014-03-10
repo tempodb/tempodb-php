@@ -7,8 +7,8 @@ date_default_timezone_set("America/Chicago");
 $tdb = new TempoDB("your-api-key", "your-api-secret");
 
 $series_key = "custom-series-key";
-$start = new DateTime("2011-01-03");
-$end = new DateTime("2011-01-06");
+$start = new DateTime("2014-02-01");
+$end = new DateTime("2014-02-02");
 
 
 /* read query with no rollup interval or function specified */
