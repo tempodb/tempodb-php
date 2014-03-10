@@ -15,9 +15,4 @@ $data = array(
 $result = $tdb->increment_key($series_key, $data);
 var_dump($result);
 
-$start = new DateTime("2012-07-04");
-$end = new DateTime("2012-07-05");
-$result = $tdb->read_key($series_key, $start, $end);
-var_dump($result);
-
 ?>
